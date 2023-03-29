@@ -1,87 +1,159 @@
 pragma solidity ^0.8.0;
 
-contract SNAP {
-    address public bureaucrat;
-    
-    struct Applicant {
-        uint256 balance;
-        uint256 magicNumber;
-        bool provisionChangeRequested;
-    }
-    
-    mapping(address => Applicant) public applicants;
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract SNAP is ERC721 {
+    address public owner;
+
+    uint256 public ticketIndex;
+
+    mapping(address => bool) public bureaucrats;
+    mapping(address => bool) public applicants;
     mapping(address => bool) public merchants;
-    
-    event TicketProvisioned(address indexed applicant, uint256 amount);
-    event TicketTransferred(address indexed from, address indexed to, uint256 amount);
-    event ProvisionChangeRequested(address indexed applicant, uint256 newBalance);
-    event ProvisionChangeApproved(address indexed applicant, uint256 newBalance);
-    event ProvisionChangeDenied(address indexed applicant, uint256 newBalance);
-    event MagicNumberSet(address indexed merchant, uint256 magicNumber);
-    event TicketTraded(address indexed merchant, uint256 amount);
-    
-    constructor() {
-        bureaucrat = msg.sender;
+
+    mapping(uint256 => uint256) public magicNumbers;
+
+    mapping(uint256 => address) public ticketOwner;
+    mapping(address => uint256[]) public ownedTickets;
+
+
+
+     struct TicketChangeRequest {
+        uint256 newMagicNumber;
+        address applicant;
     }
-    
+
+    mapping(uint256 => TicketChangeRequest) public ticketChangeRequests;
+
+
+
+    event TicketCreated(address indexed bureaucrat, address indexed applicant, uint256 ticketId);
+    event TicketProvisioned(address indexed bureaucrat, address indexed applicant, uint256 ticketId);
+    event TicketDenied(address indexed bureaucrat, address indexed applicant, uint256 ticketId);
+    event TicketChangeRequested(address indexed requester, uint256 indexed ticketId, uint256 newMagicNumber);
+    event TicketTransferred(address indexed from, address indexed to, uint256 ticketId);
+    event MagicNumberSet(address indexed merchant, uint256 ticketId, uint256 magicNumber);
+    event TicketTraded(address indexed merchant, uint256 ticketId);
+    event TicketChangeApproved(uint256 indexed ticketId);
+    event TicketChangeDenied(uint256 indexed ticketId);
+
+    constructor() ERC721("Repas", "RS") {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");
+        _;
+    }
+
     modifier onlyBureaucrat() {
-        require(msg.sender == bureaucrat, "Only the bureaucrat can perform this action");
+        require(bureaucrats[msg.sender], "Not a bureaucrat");
         _;
     }
-    
+
     modifier onlyApplicant() {
-        require(applicants[msg.sender].balance > 0, "You must have a balance to perform this action");
+        require(applicants[msg.sender], "Not an applicant");
         _;
     }
-    
+
     modifier onlyMerchant() {
-        require(merchants[msg.sender], "Only merchants can perform this action");
+        require(merchants[msg.sender], "Not a merchant");
         _;
     }
-    
-    function provisionTickets(address applicant, uint256 amount) public onlyBureaucrat {
-        applicants[applicant].balance += amount;
-        emit TicketProvisioned(applicant, amount);
+
+    function registerBureaucrat(address _address) external onlyOwner {
+        bureaucrats[_address] = true;
     }
-    
-    function transferTickets(address to, uint256 amount) public onlyApplicant {
-        require(applicants[msg.sender].balance >= amount, "You do not have enough tickets to perform this transfer");
-        applicants[msg.sender].balance -= amount;
-        applicants[to].balance += amount;
-        emit TicketTransferred(msg.sender, to, amount);
+
+    function registerApplicant(address _address) external onlyOwner {
+        applicants[_address] = true;
     }
-    
-    function requestProvisionChange(uint256 newBalance) public onlyApplicant {
-        applicants[msg.sender].provisionChangeRequested = true;
-        applicants[msg.sender].magicNumber = 0;
-        emit ProvisionChangeRequested(msg.sender, newBalance);
+
+    function registerMerchant(address _address) external onlyOwner {
+        merchants[_address] = true;
     }
-    
-    function approveProvisionChange(address applicant, uint256 newBalance) public onlyBureaucrat {
-        require(applicants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
-        applicants[applicant].balance = 0;
-        applicants[applicant].balance += newBalance;
-        applicants[applicant].provisionChangeRequested = false;
-        emit ProvisionChangeApproved(applicant, newBalance);
+
+    function createTicket(address _applicant) external onlyBureaucrat {
+        ticketIndex++;
+        _safeMint(_applicant, ticketIndex);
+        ticketOwner[ticketIndex] = _applicant;
+        ownedTickets[_applicant].push(ticketIndex);
+        emit TicketCreated(msg.sender, _applicant, ticketIndex);
     }
-    
-    function denyProvisionChange(address applicant) public onlyBureaucrat {
-        require(applicants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
-        applicants[applicant].provisionChangeRequested = false;
-        emit ProvisionChangeDenied(applicant, applicants[applicant].balance);
+    function requestTickets(uint256 _numTickets) external onlyApplicant {
+        require(_numTickets > 0, "Invalid number of tickets");
+        for (uint i = 0; i < _numTickets; i++) {
+            ticketIndex++;
+            _safeMint(msg.sender, ticketIndex);
+            ticketOwner[ticketIndex] = msg.sender;
+            ownedTickets[msg.sender].push(ticketIndex);
+            emit TicketCreated(msg.sender, msg.sender, ticketIndex);
+        }
     }
-    
-    function setMagicNumber(uint256 magicNumber) public onlyMerchant {
-        require(magicNumber >= 0, "Magic number must be non-negative");
-        applicants[msg.sender].magicNumber = magicNumber;
-        emit MagicNumberSet(msg.sender, magicNumber);
+
+
+    function respondToRequest(address _applicant, uint256 _numTickets, bool _provision) external onlyBureaucrat {
+        require(applicants[_applicant], "Not an applicant");
+        for (uint256 i = 0; i < _numTickets; i++) {
+            if (_provision) {
+                ticketIndex++;
+                _safeMint(_applicant, ticketIndex);
+                ticketOwner[ticketIndex] = _applicant;
+                ownedTickets[_applicant].push(ticketIndex);
+                emit TicketCreated(msg.sender, _applicant, ticketIndex);
+                //emit TicketProvisioned(msg.sender, _applicant, ticketIndex);
+            } else {
+                emit TicketDenied(msg.sender, _applicant, 0);
+            }
+        }
     }
+
     
-    function tradeTickets(uint256 amount) public onlyMerchant {
-        require(applicants[msg.sender].balance >= amount, "You do not have enough tickets to perform this trade");
-        applicants[msg.sender].balance -= amount;
-        payable(bureaucrat).transfer(amount);
-        emit TicketTraded(msg.sender, amount);
+    function requestTicketChange(uint256 _ticketId, uint256 _newMagicNumber) external onlyApplicant {
+        require(ticketOwner[_ticketId] == msg.sender, "Not the ticket owner");
+        require(_newMagicNumber >= 0, "Invalid magic number");
+        ticketChangeRequests[_ticketId] = TicketChangeRequest(_newMagicNumber, msg.sender);
+        emit TicketChangeRequested(msg.sender, _ticketId, _newMagicNumber);
+    }
+
+    
+  
+
+    function respondToChangeRequest(uint256 _ticketId, bool _isApproved) external onlyBureaucrat {
+        require(ticketOwner[_ticketId] != address(0), "Ticket does not exist");
+        require(ticketChangeRequests[_ticketId].applicant != address(0), "No change request found");
+
+        if (_isApproved) {
+            magicNumbers[_ticketId] = ticketChangeRequests[_ticketId].newMagicNumber;
+            emit TicketChangeApproved(_ticketId);
+        } else {
+            emit TicketChangeDenied(_ticketId);
+        }
+
+        delete ticketChangeRequests[_ticketId];
+    }
+
+
+
+    function transferToMerchant(address _merchant, uint256 _ticketId, uint256 _magicNumber) external {
+        require(merchants[_merchant], "Not a registered merchant");
+        require(ticketOwner[_ticketId] == msg.sender, "Not the ticket owner");
+        magicNumbers[_ticketId] = _magicNumber;
+        safeTransferFrom(msg.sender, _merchant, _ticketId);
+        ticketOwner[_ticketId] = _merchant;
+        emit TicketTransferred(msg.sender, _merchant, _ticketId);
+    }
+    function setMagicNumber(uint256 _ticketId, uint256 _magicNumber) external onlyMerchant {
+        require(ticketOwner[_ticketId] == msg.sender, "Not the ticket owner");
+        magicNumbers[_ticketId] = _magicNumber;
+        emit MagicNumberSet(msg.sender, _ticketId, _magicNumber);
+    }
+
+    function tradeTicketForTax(uint256 _ticketId) external onlyMerchant {
+        require(ticketOwner[_ticketId] == msg.sender, "Not the ticket owner");
+        _transfer(msg.sender, address(this), _ticketId);
+        emit TicketTraded(msg.sender, _ticketId);
     }
 
 }
+   
