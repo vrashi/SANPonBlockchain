@@ -4,7 +4,7 @@ App = {
     contracts: {},
     //development
     url:'http://127.0.0.1:7545',
-    network_id:5777,
+    network_id:1337,
     sender:null,
     receiver:null,
     value:1000000000000000000,
