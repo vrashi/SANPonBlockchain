@@ -58,13 +58,27 @@ App =
       //Allows anybody to transfer tickets to anybody
       $(document).on('click', '#send', function()
       {
-         App.transferTickets(jQuery('#receiveaddress').val(), jQuery('#sendamount').val());
+         App.transferTokens(jQuery('#receiveaddress').val(), jQuery('#sendamount').val());
       });
   
+      //Allows bureaucrat to approve Succuleux requests
+      $(document).on('click', '#approve', function()
+      {
+        App.approve(jQuery('#addressdecision').val(), jQuery('#amountdecision').val());
+      });
+
+
+      //Allows bureaucrat to deny Succuleux requests
+      $(document).on('click', '#deny', function()
+      {
+        App.deny(jQuery('#addressdecision').val());
+      });
+
       
       App.populateAddress();
     },
 
+    //Not sure WTF this does?
     populateAddress : function()
     {  
         // getting sender and reciever address and their balances            
@@ -84,111 +98,68 @@ App =
           });
     },  
   
-    handleSignedMessage:function(receiver,amount)
+    //Function for magic number to be set by merchants
+    setMagic:function(num)
     {  
-      // function innvoked after sending micropayment    
-      if(receiver!=App.receiver)
+      if(typeof(num) != typeof(1))
       {
-        alert('Error in reciever\'s address.')
+        alert('Please correct the magic number.');
         return false;
       }
-      if(amount<=0)
-      {
-        alert('Please correct the amount.');
-        return false;
-      }
-      var weiamount=App.web3.utils.toWei(amount, 'ether');
-      var message = App.constructPaymentMessage(App.contracts.Payment._address, weiamount);
-      App.signMessage(message,amount);   
-      
+      App.contracts.Payment.methods.setMagicNumber(num)
     },
 
-    constructPaymentMessage:function(contractAddress, weiamount)
+
+    //Function for users to request tickets from the bureaucrat
+    requestTickets:function(amount)
     {
-      console.log('Inside Construct Message')
-      return App.web3.utils.soliditySha3(contractAddress,weiamount)
-    },
-  
-    signMessage:function (message,amount)
-    {     
-      console.log('Inside Construct Message') 
-      App.web3.eth.getAccounts((err,accounts) =>
+      if(typeof(amount) != typeof(1))
       {
-        App.web3.eth.personal.sign(message, accounts[0], function(err, signedMessage) {
-          if(!err)
-          {
-            var box='<div class="check col-md-12 col-lg-12" style="position:absolute;margin-top:'+App.margin+'px;z-index:'+App.index+';left:'+App.left+'px">'+
-                    '<span class="amount"><b>'+amount+' ETH </b></span>'+
-                    '<p class="signedMessage">'+signedMessage+'</p>'+
-                    '</div>';
-            App.index=App.index+1;
-            App.margin=App.margin+30;
-            App.left=App.left+5;
-            jQuery('#allchecks').append(box); 
-          } 
-          else
-          {
-            toastr["error"]("Error: Error in signing the message");
-            return false;
-          }
-        });
-      })
-      
-    },
-  
-      handleTransfer:function(amount,signedMessage)
-      {
-        // function invoked after claiming payments
-        //toHex conversion to support big numbers
-        if(App.web3.utils.isHexStrict(signedMessage))
-        {
-          var weiamount=App.web3.utils.toWei(amount,'ether')
-          var amount=App.web3.utils.toHex(weiamount)
-          var option={from:App.receiver}
-          App.contracts.Payment.methods.claimPayment(amount,signedMessage)
-          .send(option)
-          .on('receipt', (receipt) =>
-          {
-            if(receipt.status)
-            {
-              toastr.success("Funds are transferred to your account");
-              App.populateAddress();
-              App.web3.eth.getBalance(App.contracts.Payment._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})                                
-            }
-            else
-            {
-              toastr["error"]("Error in transfer");
-            }
-          })
-          .on('error',(err)=>
-          {
-            if(err.message.indexOf('Signed')!=-1)
-            {
-              toastr["error"]("Error: Not a valid signed message");
-              return false;
-            }
-            else if(err.message.indexOf('recipient')!=-1)
-            {
-              toastr["error"]("Error: Not an intended recipient");
-              return false;
-            }
-            else if(err.message.indexOf('Insufficient')!=-1)
-            {
-              toastr["error"]("Error: Insufficient funds");
-              return false;
-            }
-            else
-            {
-              toastr["error"]("Error: Something went wrong");
-              return false;
-            }
-          });  
+        alert('Please correct the requested amount.');
+        return false;
       }
-    else
-    {
-      toastr["error"]("Error: Please enter a valid signed message");
+      //Run the SC
+      App.contracts.Payment.methods.requestProvisionChange(amount)
+      
+      //Record off-chain
+      const fs = require('fs');
+      let data = App.contracts.Payment._address+" formally requests "+amount+" Succuleux.";
+      fs.appendFile('requests.txt', data, function (err)
+      {
+        if (err)
+        {
+          throw err;
+        }
+      });
+    },
+  
+    //Function for transferring tickets in any context besides approving provisions
+    transferTokens:function (address, amount)
+    {     
+      if(typeof(amount) != typeof(1))
+      {
+        alert('Please correct the amount');
+        return false;
+      }
+      App.contracts.Payment.methods.transferTickets(address, amount)
+    },
+
+    //Function for bureaucrats approving requests
+    approve:function (address, amount)
+    {     
+      if(typeof(amount) != typeof(1))
+      {
+        alert('Please correct the amount');
+        return false;
+      }
+      App.contracts.Payment.methods.transferTickets(address, amount)
+    },
+
+    //Function for bureaucrats denying requests
+    deny:function (address)
+    {     
+      alert('Request Denied!');
       return false;
-    }
     }
   }
   
@@ -205,4 +176,3 @@ App =
       };
     });
   });
-  
