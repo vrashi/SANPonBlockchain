@@ -1,4 +1,5 @@
-App = {
+App =
+{
     // top level varaibles
     web3: null,
     contracts: {},
@@ -11,11 +12,13 @@ App = {
     index:0,
     margin:10,
     left:15,
-    init: function() {
+    init: function()
+    {
       return App.initWeb3();
     },
     
-    initWeb3: function() {   
+    initWeb3: function()
+    {   
       //initializing web3      
       if (typeof web3 !== 'undefined') {
         App.web3 = new Web3(Web3.givenProvider);
@@ -26,8 +29,10 @@ App = {
       return App.initContract();  
     },
 
-    initContract: function() {   
-      $.getJSON('MPC.json', function(data) {       
+    initContract: function()
+    {   
+      $.getJSON('snap-sc.json', function(data)
+      {       
         App.contracts.Payment = new App.web3.eth.Contract(data.abi, data.networks[App.network_id].address, {});
         //populating contract's balance
         App.web3.eth.getBalance(App.contracts.Payment._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})   
@@ -36,39 +41,59 @@ App = {
       return App.bindEvents();
     },  
   
-    bindEvents: function() {  
-      $(document).on('click', '#send', function(){
-         App.handleSignedMessage(jQuery('#receiveaddress').val(),jQuery('#sendamount').val());
+    bindEvents: function()
+    {  
+      //Allows the merchant to set a magic number
+      $(document).on('click', '#setmagic', function()
+      {
+        App.setMagic(jQuery('#magicnum').val());
+      });
+
+      //Allows an applicant to request additional Succuleux
+      $(document).on('click', '#requestbutton', function()
+      {
+        App.requestTickets(jQuery('#requestamount').val());
+      });
+
+      //Allows anybody to transfer tickets to anybody
+      $(document).on('click', '#send', function()
+      {
+         App.transferTickets(jQuery('#receiveaddress').val(), jQuery('#sendamount').val());
       });
   
-      $(document).on('click', '#transfer', function(){
-        App.handleTransfer(jQuery('#receiveramount').val(),jQuery('#signedMessage').val());
-      });
+      
       App.populateAddress();
     },
 
-    populateAddress : function(){  
+    populateAddress : function()
+    {  
         // getting sender and reciever address and their balances            
         new Web3(App.url).eth.getAccounts((err, accounts) => {
-          if(!err){
+          if(!err)
+          {
             App.receiver=accounts[1]; 
             App.sender = accounts[0];         
             jQuery('#receiver').val(App.receiver);
             App.web3.eth.getBalance(accounts[0]).then((res)=>{ jQuery('#sender_balance').text(App.web3.utils.fromWei(res),"ether");});
             App.web3.eth.getBalance(accounts[1]).then((res)=>{ jQuery('#receiver_balance').text(App.web3.utils.fromWei(res),"ether");});      
-        }else{
-            console.log('Something went wrong');
-            }
+        }
+        else
+        {
+          console.log('Something went wrong');
+        }
           });
     },  
   
-    handleSignedMessage:function(receiver,amount){  
+    handleSignedMessage:function(receiver,amount)
+    {  
       // function innvoked after sending micropayment    
-      if(receiver!=App.receiver){
+      if(receiver!=App.receiver)
+      {
         alert('Error in reciever\'s address.')
         return false;
       }
-      if(amount<=0){
+      if(amount<=0)
+      {
         alert('Please correct the amount.');
         return false;
       }
@@ -78,14 +103,17 @@ App = {
       
     },
 
-    constructPaymentMessage:function(contractAddress, weiamount) {
+    constructPaymentMessage:function(contractAddress, weiamount)
+    {
       console.log('Inside Construct Message')
       return App.web3.utils.soliditySha3(contractAddress,weiamount)
     },
   
-    signMessage:function (message,amount) {     
+    signMessage:function (message,amount)
+    {     
       console.log('Inside Construct Message') 
-      App.web3.eth.getAccounts((err,accounts) => {
+      App.web3.eth.getAccounts((err,accounts) =>
+      {
         App.web3.eth.personal.sign(message, accounts[0], function(err, signedMessage) {
           if(!err)
           {
@@ -98,7 +126,8 @@ App = {
             App.left=App.left+5;
             jQuery('#allchecks').append(box); 
           } 
-          else{
+          else
+          {
             toastr["error"]("Error: Error in signing the message");
             return false;
           }
@@ -107,52 +136,69 @@ App = {
       
     },
   
-      handleTransfer:function(amount,signedMessage){
+      handleTransfer:function(amount,signedMessage)
+      {
         // function invoked after claiming payments
         //toHex conversion to support big numbers
-        if(App.web3.utils.isHexStrict(signedMessage)){
-        var weiamount=App.web3.utils.toWei(amount,'ether')
-        var amount=App.web3.utils.toHex(weiamount)
-        var option={from:App.receiver}
-        App.contracts.Payment.methods.claimPayment(amount,signedMessage)
-        .send(option)
-        .on('receipt', (receipt) => {
-          if(receipt.status){
+        if(App.web3.utils.isHexStrict(signedMessage))
+        {
+          var weiamount=App.web3.utils.toWei(amount,'ether')
+          var amount=App.web3.utils.toHex(weiamount)
+          var option={from:App.receiver}
+          App.contracts.Payment.methods.claimPayment(amount,signedMessage)
+          .send(option)
+          .on('receipt', (receipt) =>
+          {
+            if(receipt.status)
+            {
               toastr.success("Funds are transferred to your account");
               App.populateAddress();
               App.web3.eth.getBalance(App.contracts.Payment._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})                                
             }
-          else{
+            else
+            {
               toastr["error"]("Error in transfer");
             }
           })
-        .on('error',(err)=>{
-          if(err.message.indexOf('Signed')!=-1){
-            toastr["error"]("Error: Not a valid signed message");
-            return false;
-          }else if(err.message.indexOf('recipient')!=-1){
-            toastr["error"]("Error: Not an intended recipient");
-            return false;
-          }else if(err.message.indexOf('Insufficient')!=-1){
-            toastr["error"]("Error: Insufficient funds");
-            return false;
-          }else{
-            toastr["error"]("Error: Something went wrong");
-            return false;
-          }
-        });  
+          .on('error',(err)=>
+          {
+            if(err.message.indexOf('Signed')!=-1)
+            {
+              toastr["error"]("Error: Not a valid signed message");
+              return false;
+            }
+            else if(err.message.indexOf('recipient')!=-1)
+            {
+              toastr["error"]("Error: Not an intended recipient");
+              return false;
+            }
+            else if(err.message.indexOf('Insufficient')!=-1)
+            {
+              toastr["error"]("Error: Insufficient funds");
+              return false;
+            }
+            else
+            {
+              toastr["error"]("Error: Something went wrong");
+              return false;
+            }
+          });  
       }
-    else{
+    else
+    {
       toastr["error"]("Error: Please enter a valid signed message");
       return false;
     }
     }
   }
   
-  $(function() {
-    $(window).load(function() {
+  $(function()
+  {
+    $(window).load(function()
+    {
       App.init();
-      toastr.options = {
+      toastr.options =
+      {
         "positionClass": "right newtoast",
         "preventDuplicates": true,
         "closeButton": true
