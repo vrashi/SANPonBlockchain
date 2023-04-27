@@ -10323,7 +10323,11 @@
   },
   "networks": {},
   "schemaVersion": "3.4.13",
+<<<<<<< Updated upstream
   "updatedAt": "2023-04-27T18:23:37.672Z",
+=======
+  "updatedAt": "2023-04-27T20:18:51.067Z",
+>>>>>>> Stashed changes
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
