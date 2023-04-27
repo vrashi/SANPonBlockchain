@@ -1,3 +1,20 @@
+//Refrenced from metamask documentation
+async function initWeb3New()
+{
+    if (window.ethereum)
+    {
+        window.web3=new
+        Web3(window.ethereum);
+        await window.ethereum.enable();
+        const accounts=await
+        web3.eth.getAccounts();
+        console.log(accounts[0]);
+    }
+    else
+    {
+        alert("no metamask installed");
+    }
+}
 /*!
 * Start Bootstrap - Small Business v5.0.6 (https://startbootstrap.com/template/small-business)
 * Copyright 2013-2023 Start Bootstrap

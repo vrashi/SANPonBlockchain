@@ -10,6 +10,8 @@
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="css/styles.css" rel="stylesheet" />
+        <script src="js/app.js"></script>
+       <script src=" https://cdnjs.cloudflare.com/ajax/libs/web3/1.9.0/web3.min.js"></script>
     </head>
     <body>
         <!-- Responsive navbar-->
@@ -55,7 +57,7 @@
                         </div>
                         <div class="card-footer">
 				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="regapplicant">Register as Applicant</button>
-				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="regmerchant">Register as Merchant</button>
+				<button type="submit" onclick="initWeb3New()"style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="regmerchant">Register as Merchant</button>
 			</div>
                     </div>
                 </div>

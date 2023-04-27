@@ -160,7 +160,7 @@ App =
         alert('Please correct the amount');
         return false;
       }
-      App.contracts.Payment.methods.transferTickets(address, amount)
+      App.contracts.methods.transferTickets(address, amount)
     },
 
     //Function for bureaucrats approving requests
@@ -171,7 +171,7 @@ App =
         alert('Please correct the amount');
         return false;
       }
-      App.contracts.Payment.methods.transferTickets(address, amount)
+      App.contracts.methods.transferTickets(address, amount)
     },
 
     //Function for bureaucrats denying requests
@@ -181,17 +181,4 @@ App =
       return false;
     }
   }
-  
-  $(function()
-  {
-    $(window).load(function()
-    {
-      App.init();
-      toastr.options =
-      {
-        "positionClass": "right newtoast",
-        "preventDuplicates": true,
-        "closeButton": true
-      };
-    });
-  });
+;
