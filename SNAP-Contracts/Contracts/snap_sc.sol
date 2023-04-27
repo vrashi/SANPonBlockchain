@@ -69,24 +69,23 @@ contract SNAP {
     {
         require(participants[msg.sender].balance >= amount, "You do not have enough tickets to perform this transfer");
         participants[msg.sender].balance = participants[msg.sender].balance - amount;
-        participants[to].balance = participants[to].balance = amount;
+        participants[to].balance = participants[to].balance + amount;
         emit TicketTransferred(msg.sender, to, amount);
     }
     
-    function requestProvisionChange(uint256 newBalance) public onlyApplicant
+    function requestProvisionChange(uint256 amount) public onlyApplicant
     {
         participants[msg.sender].provisionChangeRequested = true;
         participants[msg.sender].magicNumber = 0;
-        emit ProvisionChangeRequested(msg.sender, newBalance);
+        emit ProvisionChangeRequested(msg.sender, amount);
     }
     
-    function approveProvisionChange(address applicant, uint256 newBalance) public onlyBureaucrat
+    function approveProvisionChange(address applicant, uint256 amount) public onlyBureaucrat
     {
         require(participants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
-        participants[applicant].balance = 0;
-        participants[applicant].balance += newBalance;
         participants[applicant].provisionChangeRequested = false;
-        emit ProvisionChangeApproved(applicant, newBalance);
+        transferTickets(applicant, amount);
+        emit ProvisionChangeApproved(applicant, amount);
     }
     
     function denyProvisionChange(address applicant) public onlyBureaucrat

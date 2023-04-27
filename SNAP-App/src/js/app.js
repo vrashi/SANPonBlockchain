@@ -43,6 +43,18 @@ App =
   
     bindEvents: function()
     {  
+      //Applicant registration
+      $(document).on('click', '#regapplicant', function()
+      {
+        App.regApp();
+      });
+
+      //Merchant registration
+      $(document).on('click', '#regmerchant', function()
+      {
+        App.regMer();
+      });
+
       //Allows the merchant to set a magic number
       $(document).on('click', '#setmagic', function()
       {
@@ -67,14 +79,12 @@ App =
         App.approve(jQuery('#addressdecision').val(), jQuery('#amountdecision').val());
       });
 
-
       //Allows bureaucrat to deny Succuleux requests
       $(document).on('click', '#deny', function()
       {
         App.deny(jQuery('#addressdecision').val());
       });
 
-      
       App.populateAddress();
     },
 
@@ -97,7 +107,17 @@ App =
         }
           });
     },  
-  
+
+    regApp:function()
+    {
+      App.contracts.Payment.methods.registerApplicant();
+    },
+
+    regMer:function()
+    {
+      App.contracts.Payment.methods.registerMerchant();
+    },
+
     //Function for magic number to be set by merchants
     setMagic:function(num)
     {  
@@ -108,7 +128,6 @@ App =
       }
       App.contracts.Payment.methods.setMagicNumber(num)
     },
-
 
     //Function for users to request tickets from the bureaucrat
     requestTickets:function(amount)
