@@ -11,66 +11,95 @@ contract SNAP {
         bool provisionChangeRequested;
     }
     
-    mapping(address => Applicant) public applicants;
+    mapping(address => Applicant) public participants;
+    mapping(address => bool) public users;
     mapping(address => bool) public merchants;
     
-    event TicketProvisioned(address indexed applicant, uint256 amount);
     event TicketTransferred(address indexed from, address indexed to, uint256 amount);
     event ProvisionChangeRequested(address indexed applicant, uint256 newBalance);
     event ProvisionChangeApproved(address indexed applicant, uint256 newBalance);
     event ProvisionChangeDenied(address indexed applicant, uint256 newBalance);
     event MagicNumberSet(address indexed merchant, uint256 magicNumber);
-    event TicketTraded(address indexed merchant, uint256 amount);
+    event ApplicantRegister(address indexed user);
+    event MerchantRegister(address indexed merchant);
     
-    constructor() public {
+    constructor() public
+    {
         bureaucrat = msg.sender;
+        users[msg.sender] = true;
     }
     
-    modifier onlyBureaucrat() {
+    modifier onlyBureaucrat()
+    {
         require(msg.sender == bureaucrat, "Only the bureaucrat can perform this action");
         _;
     }
     
-    modifier onlyApplicant() {
-        require(applicants[msg.sender].balance > 0, "You must have a balance to perform this action");
+    modifier onlyApplicant()
+    {
+        require(!merchants[msg.sender], "You must have a not be a merchant to perform this action");
         _;
     }
     
-    modifier onlyMerchant() {
+    modifier onlyMerchant()
+    {
         require(merchants[msg.sender], "Only merchants can perform this action");
         _;
     }
     
-    function transferTickets(address to, uint256 amount) public onlyApplicant {
-        require(applicants[msg.sender].balance >= amount, "You do not have enough tickets to perform this transfer");
-        applicants[msg.sender].balance = applicants[msg.sender].balance - amount;
-        applicants[to].balance = applicants[to].balance = amount;
+    function registerApplicant() public
+    {
+        require(!users[msg.sender], "You are already registered");
+        
+        users[msg.sender] = true;
+        participants[msg.sender].balance = 0;
+        participants[msg.sender].magicNumber = 0;
+        participants[msg.sender].provisionChangeRequested = false;
+        emit ApplicantRegister(msg.sender);
+    }
+
+    function registerMerchant() public
+    {
+        require(!merchants[msg.sender], "You are already registered");
+        merchants[msg.sender] = true;
+        emit MerchantRegister(msg.sender);
+    }
+
+    function transferTickets(address to, uint256 amount) public
+    {
+        require(participants[msg.sender].balance >= amount, "You do not have enough tickets to perform this transfer");
+        participants[msg.sender].balance = participants[msg.sender].balance - amount;
+        participants[to].balance = participants[to].balance = amount;
         emit TicketTransferred(msg.sender, to, amount);
     }
     
-    function requestProvisionChange(uint256 newBalance) public onlyApplicant {
-        applicants[msg.sender].provisionChangeRequested = true;
-        applicants[msg.sender].magicNumber = 0;
+    function requestProvisionChange(uint256 newBalance) public onlyApplicant
+    {
+        participants[msg.sender].provisionChangeRequested = true;
+        participants[msg.sender].magicNumber = 0;
         emit ProvisionChangeRequested(msg.sender, newBalance);
     }
     
-    function approveProvisionChange(address applicant, uint256 newBalance) public onlyBureaucrat {
-        require(applicants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
-        applicants[applicant].balance = 0;
-        applicants[applicant].balance += newBalance;
-        applicants[applicant].provisionChangeRequested = false;
+    function approveProvisionChange(address applicant, uint256 newBalance) public onlyBureaucrat
+    {
+        require(participants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
+        participants[applicant].balance = 0;
+        participants[applicant].balance += newBalance;
+        participants[applicant].provisionChangeRequested = false;
         emit ProvisionChangeApproved(applicant, newBalance);
     }
     
-    function denyProvisionChange(address applicant) public onlyBureaucrat {
-        require(applicants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
-        applicants[applicant].provisionChangeRequested = false;
-        emit ProvisionChangeDenied(applicant, applicants[applicant].balance);
+    function denyProvisionChange(address applicant) public onlyBureaucrat
+    {
+        require(participants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
+        participants[applicant].provisionChangeRequested = false;
+        emit ProvisionChangeDenied(applicant, participants[applicant].balance);
     }
     
-    function setMagicNumber(uint256 magicNumber) public onlyMerchant {
+    function setMagicNumber(uint256 magicNumber) public onlyMerchant
+    {
         require(magicNumber >= 0, "Magic number must be non-negative");
-        applicants[msg.sender].magicNumber = magicNumber;
+        participants[msg.sender].magicNumber = magicNumber;
         emit MagicNumberSet(msg.sender, magicNumber);
     }
 }
