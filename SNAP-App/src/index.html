@@ -50,10 +50,13 @@
                 <div class="col-md-4 mb-5">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h2 class="card-title">Applicant Registration</h2>
-                            <p class="card-text">Request for Applicant Registration. A bureaucrat from the USDA will review your application, and approve it if eligible.</p>
+                            <h2 class="card-title">Set Value</h2>
+                            <p class="card-text">Merchants Only: Set a magic number indicating the value of Succuleux in your store.</p>
                         </div>
-                        <div class="card-footer"><a class="btn btn-primary btn-sm" href="#!">Register</a></div>
+                        <div class="card-footer">
+				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="send">Set</button>
+				<input type="text" id="magicnum" name="magicnum" placeholder="0">
+			</div>
                     </div>
                 </div>
                 <div class="col-md-4 mb-5">
@@ -78,6 +81,19 @@
 				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="send">Send</button>
 				<input type="text" id="receiveaddress" name="addr" placeholder="0xBA94b0BE6....">
 				<input type="text" id="sendamount" name="amount" placeholder="0.0">
+			</div>
+                    </div>
+                </div>
+		<div class="col-md-4 mb-5">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title">Approve Requests</h2>
+                            <p class="card-text">Bureaucrats Only: Upon reading a request, approve or deny it here.</p>
+                        </div>
+                        <div class="card-footer">
+				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="send">Approve</button>
+				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="send">Deny</button>
+				<input type="text" id="addressdecision" name="addressdecision" placeholder="0xBA94b0BE6....">
 			</div>
                     </div>
                 </div>
