@@ -4,7 +4,8 @@ pragma solidity >=0.4.21 <0.7.0;
 contract SNAP {
     address public bureaucrat;
     
-    struct Applicant {
+    struct Applicant
+    {
         uint256 balance;
         uint256 magicNumber;
         bool provisionChangeRequested;
@@ -40,15 +41,10 @@ contract SNAP {
         _;
     }
     
-    function provisionTickets(address applicant, uint256 amount) public onlyBureaucrat {
-        applicants[applicant].balance += amount;
-        emit TicketProvisioned(applicant, amount);
-    }
-    
     function transferTickets(address to, uint256 amount) public onlyApplicant {
         require(applicants[msg.sender].balance >= amount, "You do not have enough tickets to perform this transfer");
-        applicants[msg.sender].balance -= amount;
-        applicants[to].balance += amount;
+        applicants[msg.sender].balance = applicants[msg.sender].balance - amount;
+        applicants[to].balance = applicants[to].balance = amount;
         emit TicketTransferred(msg.sender, to, amount);
     }
     
@@ -77,12 +73,4 @@ contract SNAP {
         applicants[msg.sender].magicNumber = magicNumber;
         emit MagicNumberSet(msg.sender, magicNumber);
     }
-    
-    function tradeTickets(uint256 amount) public onlyMerchant {
-        require(applicants[msg.sender].balance >= amount, "You do not have enough tickets to perform this trade");
-        applicants[msg.sender].balance -= amount;
-        payable(bureaucrat).transfer(amount);
-        emit TicketTraded(msg.sender, amount);
-    }
-
 }
