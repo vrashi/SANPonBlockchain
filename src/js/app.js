@@ -5,19 +5,20 @@ App =
     contracts: {},
     //development
     url:'http://127.0.0.1:7545',
-    network_id:1337,
+    network_id:5777,
     sender:null,
     receiver:null,
     value:1000000000000000000,
     index:0,
     margin:10,
     left:15,
+    account:"",
     init: function()
     {
       return App.initWeb3();
     },
     
-    initWeb3: function()
+    initWeb3: async function()
     {   
       //initializing web3      
       if (typeof web3 !== 'undefined') {
@@ -25,14 +26,19 @@ App =
       } else {
         App.web3 = new Web3(App.url);
       }
-      ethereum.enable();      
+      await ethereum.enable();  
+      let accounts = await App.web3.eth.getAccounts();
+      console.log(accounts[0]);
+      App.account= accounts[0]
+      console.log(accounts)
       return App.initContract();  
     },
 
     initContract: function()
     {   
-      $.getJSON('snap-sc.json', function(data)
-      {       
+      $.getJSON('assets/SNAP.json', function(data)
+      {   
+        console.log(data)    
         App.contracts.Payment = new App.web3.eth.Contract(data.abi, data.networks[App.network_id].address, {});
         //populating contract's balance
         App.web3.eth.getBalance(App.contracts.Payment._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})   
@@ -110,35 +116,46 @@ App =
 
     regApp:function()
     {
-      App.contracts.Payment.methods.registerApplicant();
+      console.log( App.contracts.Payment.methods)
+      // App.contracts.Payment.deployed().then((instance) => {
+      //   console.log(instance);
+      //   // return instance.
+      // })
+      App.contracts.Payment.methods.registerApplicant().send({
+        from : App.account
+      });
     },
 
     regMer:function()
     {
-      App.contracts.Payment.methods.registerMerchant();
+      App.contracts.Payment.methods.registerMerchant().send({
+        from : App.account
+      });
     },
 
     //Function for magic number to be set by merchants
     setMagic:function(num)
     {  
-      if(typeof(num) != typeof(1))
-      {
-        alert('Please correct the magic number.');
-        return false;
-      }
-      App.contracts.Payment.methods.setMagicNumber(num)
+      num = Number(num)
+      console.log(typeof(num))
+      // if(num != "")
+      // {
+      //   alert('Please correct the magic number.');
+      //   return false;
+      // }
+      App.contracts.Payment.methods.setMagicNumber(num).send({from:App.account})
     },
 
     //Function for users to request tickets from the bureaucrat
-    requestTickets:function(amount)
+    requestTickets: async function(amount)
     {
-      if(typeof(amount) != typeof(1))
-      {
-        alert('Please correct the requested amount.');
-        return false;
-      }
+      // if(typeof(amount) != typeof(1))
+      // {
+      //   alert('Please correct the requested amount.');
+      //   return false;
+      // }
       //Run the SC
-      App.contracts.Payment.methods.requestProvisionChange(amount)
+      await App.contracts.Payment.methods.requestProvisionChange(amount).send({from:App.account})
       
       //Record off-chain
       const fs = require('fs');
@@ -155,23 +172,23 @@ App =
     //Function for transferring tickets in any context besides approving provisions
     transferTokens:function (address, amount)
     {     
-      if(typeof(amount) != typeof(1))
-      {
-        alert('Please correct the amount');
-        return false;
-      }
-      App.contracts.methods.transferTickets(address, amount)
+      // if(typeof(amount) != typeof(1))
+      // {
+      //   alert('Please correct the amount');
+      //   return false;
+      // }
+      App.contracts.Payment.methods.transferTickets(address, amount).send({from:App.account})
     },
 
     //Function for bureaucrats approving requests
     approve:function (address, amount)
     {     
-      if(typeof(amount) != typeof(1))
-      {
-        alert('Please correct the amount');
-        return false;
-      }
-      App.contracts.methods.transferTickets(address, amount)
+      // if(typeof(amount) != typeof(1))
+      // {
+      //   alert('Please correct the amount');
+      //   return false;
+      // }
+      App.contracts.Payment.methods.transferTickets(address, amount).send({from:App.account})
     },
 
     //Function for bureaucrats denying requests
@@ -182,3 +199,6 @@ App =
     }
   }
 ;
+addEventListener("load", (event) => {
+  App.init()
+});
