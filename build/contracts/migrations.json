@@ -10323,11 +10323,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.13",
-<<<<<<< HEAD
-  "updatedAt": "2023-04-28T01:00:07.540Z",
-=======
   "updatedAt": "2023-04-28T16:23:56.249Z",
->>>>>>> 64ceaf2075037615ab7071b6776ff5900ad9eb82
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
