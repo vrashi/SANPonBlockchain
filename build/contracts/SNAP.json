@@ -10330,8 +10330,12 @@
     }
   },
   "schemaVersion": "3.4.13",
+<<<<<<< HEAD
   "updatedAt": "2023-04-28T01:00:07.535Z",
   "networkType": "ethereum",
+=======
+  "updatedAt": "2023-04-28T16:23:53.455Z",
+>>>>>>> 64ceaf2075037615ab7071b6776ff5900ad9eb82
   "devdoc": {
     "methods": {}
   },
