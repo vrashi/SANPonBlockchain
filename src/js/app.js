@@ -39,9 +39,9 @@ App =
       $.getJSON('assets/SNAP.json', function(data)
       {   
         console.log(data)    
-        App.contracts.Payment = new App.web3.eth.Contract(data.abi, data.networks[App.network_id].address, {});
+        App.contracts.snap_sc = new App.web3.eth.Contract(data.abi, data.networks[App.network_id].address, {});
         //populating contract's balance
-        App.web3.eth.getBalance(App.contracts.Payment._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})   
+        App.web3.eth.getBalance(App.contracts.snap_sc._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})   
       }) 
            
       return App.bindEvents();
@@ -116,19 +116,19 @@ App =
 
     regApp:function()
     {
-      console.log( App.contracts.Payment.methods)
+      console.log( App.contracts.snap_sc.methods)
       // App.contracts.Payment.deployed().then((instance) => {
       //   console.log(instance);
       //   // return instance.
       // })
-      App.contracts.Payment.methods.registerApplicant().send({
+      App.contracts.snap_sc.methods.registerApplicant().send({
         from : App.account
       });
     },
 
     regMer:function()
     {
-      App.contracts.Payment.methods.registerMerchant().send({
+      App.contracts.snap_sc.methods.registerMerchant().send({
         from : App.account
       });
     },
@@ -143,7 +143,7 @@ App =
       //   alert('Please correct the magic number.');
       //   return false;
       // }
-      App.contracts.Payment.methods.setMagicNumber(num).send({from:App.account})
+      App.contracts.snap_sc.methods.setMagicNumber(num).send({from:App.account})
     },
 
     //Function for users to request tickets from the bureaucrat
@@ -155,11 +155,11 @@ App =
       //   return false;
       // }
       //Run the SC
-      await App.contracts.Payment.methods.requestProvisionChange(amount).send({from:App.account})
+      await App.contracts.snap_sc.methods.requestProvisionChange(amount).send({from:App.account})
       
       //Record off-chain
       const fs = require('fs');
-      let data = App.contracts.Payment._address+" formally requests "+amount+" Succuleux.";
+      let data = App.contracts.snap_sc._address+" formally requests "+amount+" Succuleux.";
       fs.appendFile('requests.txt', data, function (err)
       {
         if (err)
@@ -177,7 +177,7 @@ App =
       //   alert('Please correct the amount');
       //   return false;
       // }
-      App.contracts.Payment.methods.transferTickets(address, amount).send({from:App.account})
+      App.contracts.snap_sc.methods.transferTickets(address, amount).send({from:App.account})
     },
 
     //Function for bureaucrats approving requests
@@ -188,7 +188,7 @@ App =
       //   alert('Please correct the amount');
       //   return false;
       // }
-      App.contracts.Payment.methods.transferTickets(address, amount).send({from:App.account})
+      App.contracts.snap_sc.methods.transferTickets(address, amount).send({from:App.account})
     },
 
     //Function for bureaucrats denying requests
