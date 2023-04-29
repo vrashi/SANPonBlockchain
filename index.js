@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 app.use(express.static('src'));
-app.use(express.static('../SNAP-Contracts/build/contracts'));
+//app.use(express.static('contracts/snap_sc.sol'));
 app.get('/', function (req, res) {
   res.render('index.html');
 });

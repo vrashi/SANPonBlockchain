@@ -31,7 +31,6 @@ App =
       console.log(accounts[0]);
       App.account= accounts[0]
       console.log(accounts)
-      console.log("This happened #1"); 
       return App.initContract(); 
       
     },
@@ -45,7 +44,6 @@ App =
         //populating contract's balance
         App.web3.eth.getBalance(App.contracts.snap_sc._address).then((res)=>{ jQuery('#channel_balance').text(App.web3.utils.fromWei(res),"ether");})   
       }) 
-      console.log("This happened #2"); 
       return App.bindEvents();
     },  
   
@@ -92,7 +90,6 @@ App =
       {
         App.deny(jQuery('#addressdecision').val());
       });
-      console.log("This happened #3"); 
       App.populateAddress();
     },
 
@@ -114,7 +111,6 @@ App =
           console.log('Something went wrong');
         }
           });
-        console.log("This happened #4"); 
     },  
 
     regApp:function()
@@ -124,11 +120,9 @@ App =
       //   console.log(instance);
       //   // return instance.
       // })
-      console.log("This happened #5"); 
       App.contracts.snap_sc.methods.registerApplicant().send({
         from : App.account
       });
-      console.log("This happened #6");
     },
 
     regMer:function()
