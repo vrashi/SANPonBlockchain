@@ -188,7 +188,7 @@ App =
       //   alert('Please correct the amount');
       //   return false;
       // }
-      App.contracts.snap_sc.methods.transferTickets(address, amount).send({from:App.account})
+      App.contracts.snap_sc.methods.approveProvisionChange(address).send({from:App.account})
     },
 
     //Function for bureaucrats denying requests
