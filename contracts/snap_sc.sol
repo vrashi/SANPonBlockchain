@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.17;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -20,11 +20,17 @@ contract SNAP is ERC721{
         string[] mealsOwned;
         mapping(string => uint[]) tokens;
         string openRequestMeal;
+        bool registered;
+    }
+    struct merchant{
+        uint[] tokenId;
+        mapping(string => uint[]) tokens;
+        bool registered;
     }
     
     mapping(address => Applicant) public participants;
     mapping(address => bool) public users;
-    mapping(address => bool) public merchants;
+    mapping(address => merchant) public merchants;
     
     event TicketTransferred(address indexed from, address indexed to, uint256 amount);
     event ProvisionChangeRequested(address indexed applicant, string mealRequested);
@@ -48,13 +54,13 @@ contract SNAP is ERC721{
     
     modifier onlyApplicant()
     {
-        require(!merchants[msg.sender], "You must have a not be a merchant to perform this action");
+        require(participants[msg.sender].registered, "You must be an applicant to perform this action");
         _;
     }
     
     modifier onlyMerchant()
     {
-        require(merchants[msg.sender], "Only merchants can perform this action");
+        require(merchants[msg.sender].registered, "Only merchants can perform this action");
         _;
     }
     
@@ -66,17 +72,20 @@ contract SNAP is ERC721{
         participants[msg.sender].balance = 0;
         participants[msg.sender].magicNumber = 0;
         participants[msg.sender].provisionChangeRequested = false;
+        participants[msg.sender].registered = true;
         emit ApplicantRegister(msg.sender);
     }
 
     function registerMerchant() public
     {
-        require(!merchants[msg.sender], "You are already registered");
-        merchants[msg.sender] = true;
+        require(!merchants[msg.sender].registered, "You are already registered");
+        merchants[msg.sender].registered = true;
         emit MerchantRegister(msg.sender);
     }
+
+
  
-    function transferTickets(address to, string calldata mealToBuy) public
+    function purchaseMeal(address to, string calldata mealToBuy) public onlyApplicant
     {
         require(participants[msg.sender].tokens[mealToBuy].length != 0, "You do not have enough tickets to perform this transfer");
         //participants[msg.sender].balance = participants[msg.sender].balance - amount;
@@ -94,9 +103,28 @@ contract SNAP is ERC721{
         //     }
         // }
         _transfer(msg.sender, to,participants[msg.sender].tokens[mealToBuy][i-1]);
+        merchants[to].tokenId.push(participants[msg.sender].tokens[mealToBuy][i-1]);
+        
+        // merchants[msg.sender].tokens[participants[applicant].openRequestMeal].push(tokenCounter);
         participants[msg.sender].tokens[mealToBuy].pop();
         //  _transfer(msg.sender, to,participants[msg.sender].tokenId[0]);
     //    require(mealsFound == amount,"No Sufficient Meal Coupons Found");
+
+        emit TicketTransferred(msg.sender, to,0);
+    }
+    function sendToGovt(address to, uint noOfTokens) public onlyMerchant
+    {
+        require(merchants[msg.sender].tokenId.length >= noOfTokens, "You do not have enough tickets to perform this transfer");
+        
+        // uint len = merchants[msg.sender].tokenId.length;
+        
+        for (uint256 i; i < noOfTokens;i++) {
+            _transfer(msg.sender, to, merchants[msg.sender].tokenId[i]);
+           
+        }
+
+        // _transfer(msg.sender, to,participants[msg.sender].tokens[mealToBuy][i-1]);
+        // participants[msg.sender].tokens[mealToBuy].pop();
 
         emit TicketTransferred(msg.sender, to,0);
     }
@@ -144,9 +172,15 @@ contract SNAP is ERC721{
     }
 
     function getTokenId(address owner) public   view returns( uint  [] memory){
-        return participants[owner].tokenId;
+        return participants[owner].tokens["pizza"];
+    }
+    function getTokenIdMerchant(address owner) public   view returns( uint  [] memory){
+        return merchants[owner].tokenId;
     }
     function getMealsOwned(address owner) public   view returns( string  [] memory){
         return participants[owner].mealsOwned;
+    }
+    function getTokenBalance() public   view returns( uint ){
+        return balanceOf(msg.sender);
     }
 }
