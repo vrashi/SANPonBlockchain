@@ -161,7 +161,6 @@ contract SNAP is ERC721{
     {
         require(participants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
         participants[applicant].provisionChangeRequested = false;
-        participants[applicant].openRequestMeal = '';
         emit ProvisionChangeDenied(applicant, participants[applicant].balance);
     }
     
