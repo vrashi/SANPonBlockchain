@@ -214,7 +214,7 @@ App =
     viewBalance:function()
     {
       let balance = App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account});
-      document.getElementById('balancebox').innerHTML = balance;
+      document.getElementById('balancebox').value = balance;
     }
   }
 ;
