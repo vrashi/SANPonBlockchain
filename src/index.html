@@ -64,18 +64,6 @@
                 <div class="col-md-4 mb-5">
                     <div class="card h-100">
                         <div class="card-body">
-                            <h2 class="card-title">Set Value</h2>
-                            <p class="card-text">Merchants Only: Set a magic number indicating the value of Succuleux in your store.</p>
-                        </div>
-                        <div class="card-footer">
-				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="setmagic">Set</button>
-				<input type="text" id="magicnum" name="magicnum" placeholder="0" required>
-			</div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-5">
-                    <div class="card h-100">
-                        <div class="card-body">
                             <h2 class="card-title">Request Meal Tokens</h2>
                             <p class="card-text">Request additional Succuleux from the USDA if you have gone above your allotment.</p>
                         </div>
@@ -92,9 +80,22 @@
                             <p class="card-text">Send Succuleux to the merchant that you are trying to purchase from. Be advised it is a federal offense for anybody but you to use your allocated Succuleux.</p>
                         </div>
                         <div class="card-footer">
-				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="send">Buy</button>
+				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="send">Buy Meal</button>
 				<input type="text" id="receiveaddress" name="addr" placeholder="0xBA94b0BE6....">
 				<input type="text" id="sendamount" name="amount" placeholder="Item">
+			</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-5">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title">Redeem</h2>
+                            <p class="card-text">Merchants Only: Redeem your Succuleux in return for tax cuts.</p>
+                        </div>
+                        <div class="card-footer">
+				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="redeemtokens">Redeem</button>
+                <input type="text" id="bureaucrataddress" name="addr" placeholder="0xBA94b0BE6....">
+				<input type="text" id="redeemamount" name="amount" placeholder="Item">
 			</div>
                     </div>
                 </div>
@@ -102,7 +103,7 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <h2 class="card-title">Approve Requests</h2>
-                            <p class="card-text">Bureaucrats Only: Upon reading a request, approve or deny it here along with the prescribed amount.</p>
+                            <p class="card-text">Bureaucrats Only: Upon reading a request, approve or deny it here.</p>
                         </div>
                         <div class="card-footer">
 				<button type="submit" style="background-color:red; border-color:blue; color:white" class="btn btn-light" id="approve">Approve</button>
@@ -115,8 +116,8 @@
 			<button type="button">View Purchased Items</button>
 			<br>
 			<br>
-			<button type="submit" id="view">View Balance</button>
-            <textarea id="balancebox" placeholder="Balance" readonly></textarea>
+			<button id="viewbalance" type="submit">View Balance</button>
+			<textarea id="balancebox" readonly></textarea>
 		</div>
             </div>
         </div>

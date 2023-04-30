@@ -96,10 +96,16 @@ App =
         App.deny(jQuery('#addressdecision').val());
       });
 
-      //Allows bureaucrat to view balance
-      $(document).on('click', '#view', function()
+      //Allows user to view balance
+      $(document).on('click', '#viewbalance', function()
       {
         App.viewBalance();
+      });
+
+      //Allows bureaucrat to deny Succuleux requests
+      $(document).on('click', '#redeemtokens', function()
+      {
+        App.redeem(jQuery('#bureaucrataddress').val(), jQuery('#redeemamount').val());
       });
 
       App.populateAddress();
@@ -193,6 +199,11 @@ App =
       App.contracts.snap_sc.methods.purchaseMeal(address, amount).send({from:App.account})
     },
 
+    redeem:function(address, amount)
+    {
+      App.contracts.snap_sc.methods.sendToGovt(address, amount).send({from:App.account})
+    },
+
     //Function for bureaucrats approving requests
     approve:function (address, amount)
     {     
@@ -213,8 +224,18 @@ App =
 
     viewBalance:function()
     {
+<<<<<<< HEAD
       let balance = App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account});
       document.getElementById('balancebox').value = balance;
+=======
+      App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account}).then(function(receipt)
+      {
+        console.log(typeof(receipt));
+        document.getElementById('balancebox').innerHTML = receipt;
+      })
+      //console.log(balance);
+      //document.getElementById('balancebox').innerHTML = String(balance);
+>>>>>>> 4bf6d68b6ab1ae1b3f7f71650058fd963fb8d397
     }
   }
 ;
