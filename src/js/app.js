@@ -96,7 +96,7 @@ App =
         App.deny(jQuery('#addressdecision').val());
       });
 
-      //Allows bureaucrat to deny Succuleux requests
+      //Allows user to view balance
       $(document).on('click', '#viewbalance', function()
       {
         App.viewBalance();
@@ -231,6 +231,8 @@ App =
       })
       //console.log(balance);
       //document.getElementById('balancebox').innerHTML = String(balance);
+      let balance = App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account});
+      document.getElementById('balancebox').innerHTML = balance;
     }
   }
 ;
