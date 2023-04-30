@@ -231,8 +231,6 @@ App =
       })
       //console.log(balance);
       //document.getElementById('balancebox').innerHTML = String(balance);
-      let balance = App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account});
-      document.getElementById('balancebox').innerHTML = balance;
     }
   }
 ;
