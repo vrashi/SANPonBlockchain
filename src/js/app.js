@@ -95,6 +95,13 @@ App =
       {
         App.deny(jQuery('#addressdecision').val());
       });
+
+      //Allows bureaucrat to view balance
+      $(document).on('click', '#view', function()
+      {
+        App.viewBalance();
+      });
+
       App.populateAddress();
     },
 
@@ -202,6 +209,12 @@ App =
     {     
       alert('Request Denied!');
       return false;
+    },
+
+    viewBalance:function()
+    {
+      let balance = App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account});
+      document.getElementById('balancebox').innerHTML = balance;
     }
   }
 ;
