@@ -40,7 +40,7 @@ contract SNAP is ERC721{
     event ApplicantRegister(address indexed user);
     event MerchantRegister(address indexed merchants);
     
-    constructor() ERC721("Meal", "MEAL") public
+    constructor() ERC721("Meal", "MEAL") 
     {
         bureaucrat = msg.sender;
         users[msg.sender] = true;
