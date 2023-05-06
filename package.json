@@ -2,7 +2,8 @@
   "name": "SANPonBlockchain",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "truffle-config.js",
+  
   "scripts": {
     "start": "node index.js"
   },
@@ -10,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.3",
+    "@truffle/hdwallet-provider": "2.1.10",
     "express": "^4.16.4",
     "mongodb": "^5.3.0"
   }

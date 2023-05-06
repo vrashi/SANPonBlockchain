@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract SNAP is ERC721{
     address public bureaucrat;
@@ -39,8 +38,9 @@ contract SNAP is ERC721{
     event MagicNumberSet(address indexed merchant, uint256 magicNumber);
     event ApplicantRegister(address indexed user);
     event MerchantRegister(address indexed merchants);
+    event BalanceOfUser(address indexed participant, uint balance);
     
-    constructor() ERC721("Meal", "MEAL") 
+    constructor() ERC721("Meal", "MEAL") public
     {
         bureaucrat = msg.sender;
         users[msg.sender] = true;
@@ -88,27 +88,13 @@ contract SNAP is ERC721{
     function purchaseMeal(address to, string calldata mealToBuy) public onlyApplicant
     {
         require(participants[msg.sender].tokens[mealToBuy].length != 0, "You do not have enough tickets to perform this transfer");
-        //participants[msg.sender].balance = participants[msg.sender].balance - amount;
-        //participants[to].balance = participants[to].balance + amount;
+       
         uint i = participants[msg.sender].tokens[mealToBuy].length;
-        // uint mealsFound = 0;
-        // for (i=0; i<=participants[msg.sender].tokenId.length; i++){
-            // if (compare((participants[msg.sender].mealsOwned[i]),mealToBuy)){
-        //         if(mealsFound < amount){
-        //             // mealsFound = mealsFound + 1;
-        //             // _transfer(msg.sender, to,participants[msg.sender].tokenId[i]);
-        //             // delete participants[msg.sender].tokenId[i];
-        //             // delete participants[msg.sender].mealsOwned[i];
-        //         }
-        //     }
-        // }
+       
         _transfer(msg.sender, to,participants[msg.sender].tokens[mealToBuy][i-1]);
         merchants[to].tokenId.push(participants[msg.sender].tokens[mealToBuy][i-1]);
         
-        // merchants[msg.sender].tokens[participants[applicant].openRequestMeal].push(tokenCounter);
         participants[msg.sender].tokens[mealToBuy].pop();
-        //  _transfer(msg.sender, to,participants[msg.sender].tokenId[0]);
-    //    require(mealsFound == amount,"No Sufficient Meal Coupons Found");
 
         emit TicketTransferred(msg.sender, to,0);
     }
@@ -161,6 +147,7 @@ contract SNAP is ERC721{
     {
         require(participants[applicant].provisionChangeRequested, "No provision change has been requested for this applicant");
         participants[applicant].provisionChangeRequested = false;
+        participants[applicant].openRequestMeal = '';
         emit ProvisionChangeDenied(applicant, participants[applicant].balance);
     }
     
@@ -177,10 +164,8 @@ contract SNAP is ERC721{
     function getTokenIdMerchant(address owner) public   view returns( uint  [] memory){
         return merchants[owner].tokenId;
     }
-    function getMealsOwned(address owner) public   view returns( string  [] memory){
-        return participants[owner].mealsOwned;
-    }
-    function getTokenBalance() public   view returns( uint ){
-        return balanceOf(msg.sender);
+    function getTokenBalance() public {
+        emit BalanceOfUser(msg.sender, balanceOf(msg.sender));
+       // return balanceOf(msg.sender);
     }
 }

@@ -5,7 +5,7 @@ App =
     contracts: {},
     //development
     url:'http://127.0.0.1:7545',
-    network_id:5777,
+    network_id:11155111,
     sender:null,
     receiver:null,
     value:1000000000000000000,
@@ -141,8 +141,10 @@ App =
       App.contracts.snap_sc.methods.registerApplicant().send({
         from : App.account
       }).then(a => {
-        console.log("This happened #6", a);
-      }).catch();
+        console.log("Registered successfully", a);
+      }).catch(function(){
+        alert("Applicant already registered.");
+      });
     },
 
     regMer:function()
@@ -224,18 +226,15 @@ App =
 
     viewBalance:function()
     {
-<<<<<<< HEAD
-      let balance = App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account});
-      document.getElementById('balancebox').value = balance;
-=======
       App.contracts.snap_sc.methods.getTokenBalance().send({from:App.account}).then(function(receipt)
       {
-        console.log(typeof(receipt));
-        document.getElementById('balancebox').innerHTML = receipt;
+        bal = receipt.events.BalanceOfUser.returnValues.balance;
+        document.getElementById('balancebox').innerHTML = "Balance: MEAL " + bal + ".00";
+      }).catch(function() {
+        alert("Cannot retrieve balance at this time. Please try again later.");
       })
-      //console.log(balance);
+    
       //document.getElementById('balancebox').innerHTML = String(balance);
->>>>>>> 4bf6d68b6ab1ae1b3f7f71650058fd963fb8d397
     }
   }
 ;
